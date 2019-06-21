@@ -3,10 +3,11 @@ val kotlin_version: String by project
 val koroutines_version: String by project
 val koin_version: String by project
 val logback_version: String by project
+val kotlintest_version: String by project
 
 plugins {
     application
-    kotlin("jvm") version "1.3.31"
+    kotlin("jvm") version "1.3.40"
 }
 
 group = "spotify-api-explorer"
@@ -18,8 +19,16 @@ application {
 
 repositories {
     mavenLocal()
-    jcenter()
-    maven { url = uri("https://kotlin.bintray.com/ktor") }
+    
+    if (project.extra.has("repositoryMirrors")) {
+        val repositoryMirrors: String by project
+        repositoryMirrors.split(',').forEach { mirrorUrl ->
+            maven { url = uri(mirrorUrl) }
+        }
+    } else {
+        jcenter()
+        maven { url = uri("https://kotlin.bintray.com/ktor") }
+    }
 }
 
 dependencies {
@@ -38,6 +47,7 @@ dependencies {
 
     implementation("org.koin:koin-ktor:$koin_version")
 
+    testImplementation("io.kotlintest:kotlintest-assertions-ktor:$kotlintest_version")
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")
     testImplementation("io.ktor:ktor-client-mock:$ktor_version")
     testImplementation("io.ktor:ktor-client-mock-jvm:$ktor_version")
