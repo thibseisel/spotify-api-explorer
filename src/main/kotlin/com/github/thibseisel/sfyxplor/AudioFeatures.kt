@@ -1,10 +1,20 @@
 package com.github.thibseisel.sfyxplor
 
+import com.google.gson.annotations.SerializedName
+
 /**
  * Enumeration of musical modes.
  */
 enum class MusicalMode {
-    MINOR, MAJOR
+    MINOR, MAJOR;
+
+    companion object {
+        fun decode(mode: Int): MusicalMode = when (mode) {
+            0 -> MINOR
+            1 -> MAJOR
+            else -> throw IllegalArgumentException("Unexpected musical mode numeric code: $mode")
+        }
+    }
 }
 
 /**
@@ -12,7 +22,25 @@ enum class MusicalMode {
  * E.g. 0 = C, 1 = C♯/D♭, 2 = D, and so on.
  */
 enum class Pitch {
-    C, C_SHARP, D, D_SHARP, E, F, F_SHARP, G, G_SHARP, A, A_SHARP, B
+    C, C_SHARP, D, D_SHARP, E, F, F_SHARP, G, G_SHARP, A, A_SHARP, B;
+
+    companion object {
+        fun decode(keyCode: Int): Pitch? = when (keyCode) {
+            0 -> C
+            1 -> C_SHARP
+            2 -> D
+            3 -> D_SHARP
+            4 -> E
+            5 -> F
+            6 -> F_SHARP
+            7 -> G
+            8 -> G_SHARP
+            9 -> A
+            10 -> A_SHARP
+            11 -> B
+            else -> null
+        }
+    }
 }
 
 class AudioFeatures(
@@ -20,18 +48,21 @@ class AudioFeatures(
     /**
      * The unique identifier of the analyzed track in Spotify servers.
      */
+    @SerializedName("id")
     val id: String,
 
     /**
      * The estimated overall key of the track.
      * The value is `null` if the key is unknown.
      */
+    @SerializedName("key")
     val key: Pitch?,
 
     /**
      * Mode indicates the modality (major or minor) of a track,
      * the type of scale from which its melodic content is derived.
      */
+    @SerializedName("mode")
     val mode: MusicalMode,
 
     /**
@@ -39,12 +70,14 @@ class AudioFeatures(
      * In musical terminology, tempo is the speed or pace of a given piece
      * and derives directly from the average beat duration.
      */
+    @SerializedName("tempo")
     val tempo: Float,
 
     /**
      * An estimated overall time signature of a track.
      * The time signature (meter) is a notational convention to specify how many beats are in each bar (or measure).
      */
+    @SerializedName("time_signature")
     val signature: Int,
 
     /**
@@ -53,12 +86,14 @@ class AudioFeatures(
      * Loudness is the quality of a sound that is the primary psychological correlate of physical strength (amplitude).
      * Values typical range between `-60` and `0` dB.
      */
+    @SerializedName("loudness")
     val loudness: Float,
 
     /**
      * A confidence measure from `0.0` to `1.0` of whether the track is acoustic.
      * `1.0` represents high confidence the track is acoustic.
      */
+    @SerializedName("accoustiness")
     val accousticness: Float,
 
     /**
@@ -66,6 +101,7 @@ class AudioFeatures(
      * including tempo, rhythm stability, beat strength, and overall regularity.
      * A value of `0.0` is least danceable and `1.0` is most danceable.
      */
+    @SerializedName("danceability")
     val danceability: Float,
 
     /**
@@ -76,6 +112,7 @@ class AudioFeatures(
      * Perceptual features contributing to this attribute include dynamic range, perceived loudness, timbre, onset rate,
      * and general entropy.
      */
+    @SerializedName("energy")
     val energy: Float,
 
     /**
@@ -85,6 +122,7 @@ class AudioFeatures(
      * The closer the instrumentalness value is to `1.0`, the greater likelihood the track contains no vocal content. Values above 0.5 are intended to represent instrumental tracks,
      * but confidence is higher as the value approaches `1.0`.
      */
+    @SerializedName("instrumentalness")
     val instrumentalness: Float,
 
     /**
@@ -92,6 +130,7 @@ class AudioFeatures(
      * Higher liveness values represent an increased probability that the track was performed live.
      * A value above `0.8` provides strong likelihood that the track is live.
      */
+    @SerializedName("liveness")
     val liveness: Float,
 
     /**
@@ -103,6 +142,7 @@ class AudioFeatures(
      * either in sections or layered, including such cases as rap music.
      * Values below `0.33` most likely represent music and other non-speech-like tracks.
      */
+    @SerializedName("speechiness")
     val speechiness: Float,
 
     /**
@@ -110,5 +150,6 @@ class AudioFeatures(
      * Tracks with high valence sound more positive (e.g. happy, cheerful, euphoric),
      * while tracks with low valence sound more negative (e.g. sad, depressed, angry).
      */
+    @SerializedName("valence")
     val valence: Float
 )
