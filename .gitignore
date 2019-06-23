@@ -5,3 +5,6 @@
 *.iml
 *.ipr
 *.iws
+
+# Files containing sensitive information
+gradle/credentials.gradle.kts

@@ -5,6 +5,8 @@ val koin_version: String by project
 val logback_version: String by project
 val kotlintest_version: String by project
 
+apply(from = "gradle/credentials.gradle.kts")
+
 plugins {
     application
     kotlin("jvm") version "1.3.40"
@@ -15,6 +17,15 @@ version = "0.0.1"
 
 application {
     mainClassName = "io.ktor.server.netty.EngineMain"
+}
+
+tasks.named<JavaExec>("run") {
+    doFirst {
+        environment(
+            "SPOTIFY_CLIENT_ID" to project.extra["spotify_client_id"],
+            "SPOTIFY_CLIENT_SECRET" to project.extra["spotify_client_secret"]
+        )
+    }
 }
 
 repositories {
@@ -47,6 +58,7 @@ dependencies {
 
     implementation("org.koin:koin-ktor:$koin_version")
 
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$koroutines_version")
     testImplementation("io.kotlintest:kotlintest-assertions-ktor:$kotlintest_version")
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")
     testImplementation("io.ktor:ktor-client-mock:$ktor_version")
