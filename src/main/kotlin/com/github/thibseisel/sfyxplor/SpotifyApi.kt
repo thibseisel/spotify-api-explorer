@@ -23,10 +23,10 @@ data class AuthToken(
 )
 
 interface SpotifyApi {
-    suspend fun searchArtists(query: String): List<SpotifyArtist>
-    suspend fun findArtistAlbums(artistId: String): List<SpotifyAlbum>
-    suspend fun findAlbumTracks(albumId: String) : List<SpotifyTrack>
-    suspend fun getTrackFeatures(trackId: String): AudioFeatures
+    suspend fun search(query: String, offset: Int = 0, limit: Int = 20): Paging<SpotifyArtist>
+    suspend fun findArtistAlbums(artistId: String, offset: Int = 0, limit: Int = 20): Paging<SpotifyAlbum>
+    suspend fun findAlbumTracks(albumId: String, offset: Int = 0, limit: Int = 20): Paging<SpotifyTrack>
+    suspend fun getTrackFeatures(trackId: String): AudioFeatures?
 }
 
 class SpotifyApiImpl
@@ -56,7 +56,7 @@ class SpotifyApiImpl
 
     constructor(http: HttpClient, clientKey: String) : this(http, clientKey, null)
 
-    override suspend fun searchArtists(query: String): List<SpotifyArtist> {
+    override suspend fun search(query: String, offset: Int, limit: Int): Paging<SpotifyArtist> {
         if (accessToken == null) {
             accessToken = authenticate()
         }
@@ -64,7 +64,11 @@ class SpotifyApiImpl
         TODO("Search artist and configure deserialization of Paging objects")
     }
 
-    override suspend fun findArtistAlbums(artistId: String): List<SpotifyAlbum> {
+    override suspend fun findArtistAlbums(
+        artistId: String,
+        offset: Int,
+        limit: Int
+    ): Paging<SpotifyAlbum> {
         if (accessToken == null) {
             accessToken = authenticate()
         }
@@ -76,11 +80,15 @@ class SpotifyApiImpl
         TODO()
     }
 
-    override suspend fun findAlbumTracks(albumId: String): List<SpotifyTrack> {
+    override suspend fun findAlbumTracks(
+        albumId: String,
+        offset: Int,
+        limit: Int
+    ): Paging<SpotifyTrack> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override suspend fun getTrackFeatures(trackId: String): AudioFeatures {
+    override suspend fun getTrackFeatures(trackId: String): AudioFeatures? {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
@@ -95,11 +103,3 @@ class SpotifyApiImpl
         header(HttpHeaders.Authorization, "Basic $clientKey")
     }
 }
-
-class Paging<T>(
-    val items: List<T>,
-    val offset: Int,
-    val limit: Int,
-    val next: String?,
-    val previous: String?
-)

@@ -1,3 +1,5 @@
-<head>
-    <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css"/>
-</head>
+<html>
+    <head>
+        <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css"/>
+    </head>
+    <body class="mdc-typography">
