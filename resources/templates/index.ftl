@@ -1,5 +1,5 @@
 <#include "head.ftl"/>
-<h6 class="mdc-typography--headline6">Spotify Web API Explorer</h1>
+<h3 class="mdc-typography--headline3">Spotify Web API Explorer</h3>
 <form action="/search">
     <select name="type" required>
         <option value="artist" selected>Artist</option>

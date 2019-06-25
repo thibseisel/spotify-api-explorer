@@ -1,5 +1,5 @@
 <#include "head.ftl"/>
-<h6 class="mdc-typography--headline6">Search results for "${query}"</h6>
+<h3 class="mdc-typography--headline3">Search results for "${query}"</h3>
 <ul>
     <#list results.items as result>
         <li>
