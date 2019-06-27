@@ -1,11 +1,11 @@
-package com.github.thibseisel.sfyxplor
+package com.github.thibseisel.api.spotify
 
 import com.google.gson.annotations.SerializedName
 
 /**
  * An image illustrating a media hosted on Spotify.
  */
-class SpotifyImage(
+class Image(
 
     /**
      * The source URL of the image.

@@ -1,14 +1,14 @@
-package com.github.thibseisel.sfyxplor
+package com.github.thibseisel.api.spotify
 
 import com.google.gson.annotations.SerializedName
 
-class SpotifyArtist(
+class Artist(
 
     /**
      * The unique identifier of this artist on Spotify servers.
      */
     @SerializedName("id")
-    val id: String,
+    override val id: String,
 
     /**
      * The name of this artist.
@@ -36,6 +36,7 @@ class SpotifyArtist(
      * Images of the artist in various sizes, widest first.
      */
     @SerializedName("images")
-    val images: List<SpotifyImage>
-)
+    val images: List<Image>
+
+) : SearchableResource
 

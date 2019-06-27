@@ -1,14 +1,14 @@
-package com.github.thibseisel.sfyxplor
+package com.github.thibseisel.api.spotify
 
 import com.google.gson.annotations.SerializedName
 
-class SpotifyTrack(
+class Track(
 
     /**
      * The unique identifier of this track on Spotify servers.
      */
     @SerializedName("id")
-    val id: String,
+    override val id: String,
 
     /**
      * The name of the track.
@@ -40,4 +40,5 @@ class SpotifyTrack(
      */
     @SerializedName("explicit")
     val explicit: Boolean
-)
+
+) : SearchableResource

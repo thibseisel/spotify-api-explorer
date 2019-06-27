@@ -1,4 +1,4 @@
-package com.github.thibseisel.sfyxplor
+package com.github.thibseisel.api.spotify
 
 import com.google.gson.annotations.SerializedName
 

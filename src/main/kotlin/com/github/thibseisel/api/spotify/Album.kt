@@ -1,14 +1,14 @@
-package com.github.thibseisel.sfyxplor
+package com.github.thibseisel.api.spotify
 
 import com.google.gson.annotations.SerializedName
 
-class SpotifyAlbum(
+class Album(
 
     /**
      * The unique identifier of this album on Spotify servers.
      */
     @SerializedName("id")
-    val id: String,
+    override val id: String,
 
     /**
      * The name of the album.
@@ -24,7 +24,7 @@ class SpotifyAlbum(
     val releaseDate: String,
 
     /**
-     * The precision with which release_date value is known: year , month , or day.
+     * The precision with which release_date value is known: year, month, or day.
      */
     @SerializedName("release_date_precision")
     val releaseDatePrecision: String,
@@ -33,5 +33,6 @@ class SpotifyAlbum(
      * The cover art for the album in various sizes, widest first.
      */
     @SerializedName("images")
-    val images: List<SpotifyImage>
-)
+    val images: List<Image>
+
+) : SearchableResource

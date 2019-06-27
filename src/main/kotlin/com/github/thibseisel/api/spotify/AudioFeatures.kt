@@ -1,4 +1,4 @@
-package com.github.thibseisel.sfyxplor
+package com.github.thibseisel.api.spotify
 
 import com.google.gson.annotations.SerializedName
 
@@ -118,14 +118,6 @@ class AudioFeatures(
  */
 enum class MusicalMode {
     MINOR, MAJOR;
-
-    companion object {
-        fun decode(mode: Int): MusicalMode = when (mode) {
-            0 -> MINOR
-            1 -> MAJOR
-            else -> throw IllegalArgumentException("Unexpected musical mode numeric code: $mode")
-        }
-    }
 }
 
 /**
@@ -134,22 +126,4 @@ enum class MusicalMode {
  */
 enum class Pitch {
     C, C_SHARP, D, D_SHARP, E, F, F_SHARP, G, G_SHARP, A, A_SHARP, B;
-
-    companion object {
-        fun decode(keyCode: Int): Pitch? = when (keyCode) {
-            0 -> C
-            1 -> C_SHARP
-            2 -> D
-            3 -> D_SHARP
-            4 -> E
-            5 -> F
-            6 -> F_SHARP
-            7 -> G
-            8 -> G_SHARP
-            9 -> A
-            10 -> A_SHARP
-            11 -> B
-            else -> null
-        }
-    }
 }

@@ -1,4 +1,4 @@
-package com.github.thibseisel.sfyxplor
+package com.github.thibseisel.api.spotify
 
 import com.google.gson.annotations.SerializedName
 import io.ktor.client.HttpClient
@@ -23,9 +23,9 @@ data class AuthToken(
 )
 
 interface SpotifyApi {
-    suspend fun search(query: String, offset: Int = 0, limit: Int = 20): Paging<SpotifyArtist>
-    suspend fun findArtistAlbums(artistId: String, offset: Int = 0, limit: Int = 20): Paging<SpotifyAlbum>
-    suspend fun findAlbumTracks(albumId: String, offset: Int = 0, limit: Int = 20): Paging<SpotifyTrack>
+    suspend fun search(query: String, offset: Int = 0, limit: Int = 20): Paging<Artist>
+    suspend fun findArtistAlbums(artistId: String, offset: Int = 0, limit: Int = 20): Paging<Album>
+    suspend fun findAlbumTracks(albumId: String, offset: Int = 0, limit: Int = 20): Paging<Track>
     suspend fun getTrackFeatures(trackId: String): AudioFeatures?
 }
 
@@ -56,24 +56,30 @@ class SpotifyApiImpl
 
     constructor(http: HttpClient, clientKey: String) : this(http, clientKey, null)
 
-    override suspend fun search(query: String, offset: Int, limit: Int): Paging<SpotifyArtist> {
+    override suspend fun search(query: String, offset: Int, limit: Int): Paging<Artist> {
         if (accessToken == null) {
             accessToken = authenticate()
         }
 
-        TODO("Search artist and configure deserialization of Paging objects")
+        return http.get {
+            url {
+                encodedPath = "v1/search"
+                parameter("q", query)
+                parameter("type", "artist")
+            }
+        }
     }
 
     override suspend fun findArtistAlbums(
         artistId: String,
         offset: Int,
         limit: Int
-    ): Paging<SpotifyAlbum> {
+    ): Paging<Album> {
         if (accessToken == null) {
             accessToken = authenticate()
         }
 
-        val albumPage = http.get<Paging<SpotifyAlbum>> {
+        val albumPage = http.get<Paging<Album>> {
             url { encodedPath = "v1/artists/$artistId/albums" }
         }
 
@@ -84,7 +90,7 @@ class SpotifyApiImpl
         albumId: String,
         offset: Int,
         limit: Int
-    ): Paging<SpotifyTrack> {
+    ): Paging<Track> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
