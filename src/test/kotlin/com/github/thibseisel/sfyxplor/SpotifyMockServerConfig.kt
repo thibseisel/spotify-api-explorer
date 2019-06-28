@@ -11,6 +11,11 @@ import io.ktor.http.*
 const val VALID_TOKEN = "FreshToken"
 const val EXPIRED_TOKEN = "ExpiredToken"
 
+const val TEST_CLIENT_ID = "client_id"
+const val TEST_CLIENT_SECRET = "client_secret"
+
+const val TEST_BASE64_KEY = "Y2xpZW50X2lkOmNsaWVudF9zZWNyZXQ="
+
 val mockSpotifyApiConfig: HttpClientConfig<MockEngineConfig>.() -> Unit = {
     engine {
         addHandler {
@@ -23,31 +28,42 @@ val mockSpotifyApiConfig: HttpClientConfig<MockEngineConfig>.() -> Unit = {
     }
 }
 
-private fun handleSpotifyApiRequest(request: HttpRequestData): HttpResponseData = when {
-    // Return 401 when not authorization
-    HttpHeaders.Authorization !in request.headers ->
-        respondJsonError(HttpStatusCode.Unauthorized, "No token provided")
+private fun handleSpotifyApiRequest(request: HttpRequestData): HttpResponseData {
+    if (HttpHeaders.Authorization !in request.headers) {
+        return respondJsonError(HttpStatusCode.Unauthorized, "No token provided")
+    } else {
+        val token = request.headers[HttpHeaders.Authorization]
+            ?.takeIf { it.startsWith("Bearer ") }
+            ?.substringAfter("Bearer ")
+            ?.takeUnless(String::isEmpty)
 
-    // Return 401 when used token expired
-    request.headers[HttpHeaders.Authorization] == "Bearer $EXPIRED_TOKEN" ->
-        respondJsonError(HttpStatusCode.Unauthorized, "The access token expired")
+        when (token) {
+            null -> return respondJsonError(HttpStatusCode.Unauthorized)
+            EXPIRED_TOKEN -> return respondJsonError(HttpStatusCode.Unauthorized, "The access token expired")
+        }
 
-    else -> {
         val path = request.url.encodedPath
-        when {
-            path == "v1/search" -> handleApiSearch(request.url.parameters)
-            path.wildcardMatches("v1/artists/*/albums") -> {
-                val artistId = path.split('/')[2]
+        return when {
+            path == "/v1/search" -> handleApiSearch(request.url.parameters)
+            path == "/V1/artists" -> TODO()
+
+            path.wildcardMatches("/v1/artists/*") -> {
+                val artistId = path.split('/')[3]
+                handleGetAnArtist(artistId)
+            }
+
+            path.wildcardMatches("/v1/artists/*/albums") -> {
+                val artistId = path.split('/')[3]
                 handleGetAnArtistAlbums(artistId)
             }
 
-            path.wildcardMatches("v1/albums/*") -> {
-                val albumId = path.split('/')[2]
+            path.wildcardMatches("/v1/albums/*") -> {
+                val albumId = path.split('/')[3]
                 handleGetAnAlbum(albumId)
             }
 
-            path.wildcardMatches("v1/audio_features/*") -> {
-                val trackId = path.split(',')[2]
+            path.wildcardMatches("/v1/audio-features/*") -> {
+                val trackId = path.split(',')[3]
                 handleGetAudioFeatures(trackId)
             }
 
@@ -56,15 +72,15 @@ private fun handleSpotifyApiRequest(request: HttpRequestData): HttpResponseData 
     }
 }
 
-fun handleGetAudioFeatures(trackId: String): HttpResponseData {
-     // TODO Create sample data
-    return respondJson(HttpStatusCode.OK, "{}")
-}
+private fun handleGetAnArtist(artistId: String): HttpResponseData = respondJson("{}")
 
-fun handleGetAnAlbum(albumId: String): HttpResponseData {
-    // TODO Create sample data
-    return respondJson(HttpStatusCode.OK, "{}")
-}
+private fun handleGetSeveralArtists(artistIds: List<String>) = respondJson("""{
+    "artists": []
+}""".trimIndent())
+
+private fun handleGetAnAlbum(albumId: String) = respondJson("{}")
+
+private fun handleGetAudioFeatures(trackId: String): HttpResponseData = respondJson("{}")
 
 private fun String.wildcardMatches(pattern: String): Boolean {
     var scanIndex = 0
@@ -85,31 +101,46 @@ private fun handleApiSearch(queryParams: Parameters): HttpResponseData {
     val offset = queryParams["offset"]?.toInt()?.takeIf { it in 0..10000 } ?: 0
 
     // TODO Return sample data based on the search.
-    return respondJson(HttpStatusCode.OK, "[]")
+    return respondJson("[]", HttpStatusCode.OK)
 }
 
 private fun handleGetAnArtistAlbums(artistId: String): HttpResponseData {
     // TODO Create sample data.
-    return respondJson(HttpStatusCode.OK,"[]")
+    return respondJson("[]", HttpStatusCode.OK)
 }
 
 private fun handleSpotifyAccountRequest(request: HttpRequestData): HttpResponseData {
-    return if (request.method == HttpMethod.Post && request.url.encodedPath == "api/token") {
-        respondJson(HttpStatusCode.OK, """{
-            "access_token": "$VALID_TOKEN",
-            "token_type": "bearer",
-            "expired_in": 3600
-        }""".trimIndent())
+    return if (request.method == HttpMethod.Post && request.url.encodedPath == "/api/token") {
+        val clientKey = request.headers[HttpHeaders.Authorization]
+            ?.substringAfter("Basic ", "")
+            ?.takeUnless(String::isEmpty)
+
+        if (clientKey == TEST_BASE64_KEY) {
+            respondJson(
+                """{
+                    "access_token": "$VALID_TOKEN",
+                    "token_type": "bearer",
+                    "expired_in": 3600
+                }""".trimIndent(), HttpStatusCode.OK
+            )
+
+        } else {
+            respondError(HttpStatusCode.Unauthorized)
+        }
+
     } else {
-        respondError(HttpStatusCode.Unauthorized)
+        respondJsonError(HttpStatusCode.NotFound, "Service not found")
     }
 }
 
-private fun respondJson(status: HttpStatusCode, json: String) = respond(
+private fun respondJson(json: String, status: HttpStatusCode = HttpStatusCode.OK) = respond(
     json, status, headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
 )
 
-private fun respondJsonError(status: HttpStatusCode, message: String) = respondJson(status, """{ 
-    "status": ${status.value},
-    "message": "$message"
-}""".trimIndent())
+private fun respondJsonError(status: HttpStatusCode, message: String = status.description) = respondJson(
+    """{ 
+        "status": ${status.value},
+        "message": "$message"
+    }""".trimIndent(),
+    status
+)
