@@ -11,9 +11,6 @@ import io.ktor.http.*
 const val VALID_TOKEN = "FreshToken"
 const val EXPIRED_TOKEN = "ExpiredToken"
 
-const val TEST_CLIENT_ID = "client_id"
-const val TEST_CLIENT_SECRET = "client_secret"
-
 const val TEST_BASE64_KEY = "Y2xpZW50X2lkOmNsaWVudF9zZWNyZXQ="
 
 val mockSpotifyApiConfig: HttpClientConfig<MockEngineConfig>.() -> Unit = {

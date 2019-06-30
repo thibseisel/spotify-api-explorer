@@ -1,11 +1,13 @@
 package com.github.thibseisel.sfyxplor
 
+import com.github.thibseisel.api.spotify.*
+
 class FakeSpotifyApi : SpotifyApi {
 
-    override suspend fun search(query: String, offset: Int, limit: Int): Paging<SpotifyArtist> = Paging(
+    override suspend fun search(query: String, offset: Int, limit: Int): Paging<Artist> = Paging(
         listOf(
-            SpotifyArtist("abcde", "Muse", 82, listOf("modern rock", "alternative"), emptyList()),
-            SpotifyArtist("defgh", "Foo Fighters", 82, listOf("alternative metal", "rock"), emptyList())
+            Artist("abcde", "Muse", 82, listOf("modern rock", "alternative"), emptyList()),
+            Artist("defgh", "Foo Fighters", 82, listOf("alternative metal", "rock"), emptyList())
         ),
         offset,
         limit,
@@ -16,11 +18,11 @@ class FakeSpotifyApi : SpotifyApi {
         artistId: String,
         offset: Int,
         limit: Int
-    ): Paging<SpotifyAlbum> = when (artistId) {
+    ): Paging<Album> = when (artistId) {
         "abcde" -> Paging(
             listOf(
-                SpotifyAlbum("azerty", "The 2nd Law", "2011", "year", emptyList()),
-                SpotifyAlbum("poiuyt", "Simulation Theory", "2018", "year", emptyList())
+                Album("azerty", "The 2nd Law", "2011", "year", emptyList()),
+                Album("poiuyt", "Simulation Theory", "2018", "year", emptyList())
             ),
             offset,
             limit,
@@ -28,7 +30,7 @@ class FakeSpotifyApi : SpotifyApi {
         )
 
         "defgh" -> Paging(
-            listOf(SpotifyAlbum("djazao", "Concrete and Gold", "2017", "year", emptyList())),
+            listOf(Album("djazao", "Concrete and Gold", "2017", "year", emptyList())),
             offset,
             limit,
             2
@@ -41,9 +43,9 @@ class FakeSpotifyApi : SpotifyApi {
         albumId: String,
         offset: Int,
         limit: Int
-    ): Paging<SpotifyTrack> = when(albumId) {
+    ): Paging<Track> = when(albumId) {
         "azerty" -> Paging(
-            listOf(SpotifyTrack("ckzzco", "Big Freeze", 1, 9, 279000, false)),
+            listOf(Track("ckzzco", "Big Freeze", 1, 9, 279000, false)),
             offset,
             limit,
             total = 1
@@ -51,8 +53,8 @@ class FakeSpotifyApi : SpotifyApi {
 
         "poiuyt" -> Paging(
             listOf(
-                SpotifyTrack("wlpzap", "Pressure", 1, 3, 235000, false),
-                SpotifyTrack(",xncjdi", "Something Human", 1, 7, 224000, false)
+                Track("wlpzap", "Pressure", 1, 3, 235000, false),
+                Track(",xncjdi", "Something Human", 1, 7, 224000, false)
             ),
             offset,
             limit,
@@ -61,7 +63,7 @@ class FakeSpotifyApi : SpotifyApi {
 
         "djozao" -> Paging(
             listOf(
-                SpotifyTrack("ozahde", "Dirty Water", 1, 6, 320000, false)
+                Track("ozahde", "Dirty Water", 1, 6, 320000, false)
             ),
             offset,
             limit,

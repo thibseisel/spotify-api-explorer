@@ -26,7 +26,7 @@ private suspend fun ByteReadChannel.readText(): String = buildString {
     }
 }
 
-class AuthenticationFailure : Exception()
+class AuthenticationException : Exception()
 
 sealed class SpotifyApiException : Exception()
 class AuthenticationRequired : SpotifyApiException()
@@ -45,7 +45,7 @@ interface SpotifyApiClient {
      * @param clientSecret The secret key for the specified client.
      *
      * @return The token that has been generated.
-     * @throws AuthenticationFailure If the provided [clientId] and/or [clientSecret] are invalid credentials.
+     * @throws AuthenticationException If the provided [clientId] and/or [clientSecret] are invalid credentials.
      */
     suspend fun authenticate(clientId: String, clientSecret: String): AuthToken
 
