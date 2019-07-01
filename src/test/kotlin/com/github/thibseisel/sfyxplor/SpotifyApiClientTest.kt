@@ -108,7 +108,13 @@ class SpotifyApiClientTest {
         artist.name shouldBe "Muse"
         artist.popularity shouldBe 82
         artist.genres.shouldContainExactlyInAnyOrder("modern rock", "permanent wave", "piano rock", "post-grunge", "rock")
-        artist.images.shouldHaveSize(3)
+
+        artist.images shouldHaveSize 3
+        artist.images[0].should {
+            it.width shouldBe 320
+            it.height shouldBe 320
+            it.url shouldBe "https://i.scdn.co/image/17f00ec7613d733f2dd88de8f2c1628ea5f9adde"
+        }
     }
 
     @Test
@@ -178,10 +184,13 @@ private fun respondJson(@Language("JSON") json: String, status: HttpStatusCode =
     json, status, headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
 )
 
+@Language("JSON")
 private fun respondJsonError(status: HttpStatusCode, message: String = status.description) = respondJson(
-    """{ 
+    """{
+      "error": {
         "status": ${status.value},
         "message": "$message"
+      }
     }""".trimIndent(),
     status
 )
