@@ -4,6 +4,7 @@ import com.github.thibseisel.api.spotify.*
 import io.kotlintest.*
 import io.kotlintest.matchers.*
 import io.kotlintest.matchers.collections.*
+import io.kotlintest.matchers.types.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
 import io.ktor.http.*
@@ -78,7 +79,7 @@ class SpotifyApiClientTest {
 
     @Test
     fun `Given authentication, when calling any endpoint, then send token as Authorization`() = runBlockingTest {
-        val backend = MockEngine { request ->
+        val authenticatingEngine = MockEngine { request ->
             when (request.url.host) {
                 "accounts.spotify.com" -> respondJson(AUTH_TOKEN)
                 "api.spotify.com" -> {
@@ -89,9 +90,9 @@ class SpotifyApiClientTest {
             }
         }
 
-        val apiClient = SpotifyApiClientImpl(backend)
-
+        val apiClient = SpotifyApiClientImpl(authenticatingEngine)
         apiClient.authenticate(TEST_CLIENT_ID, TEST_CLIENT_SECRET)
+
         apiClient.getArtist("12Chz98pHFMPJEknJQMWvI")
     }
 
@@ -153,7 +154,7 @@ class SpotifyApiClientTest {
 
     @Test
     fun `When getting an unknown artist then fail with ResourceNotFound`() = runBlockingTest {
-        val unknownArtistEndpoint = MockEngine { respondJsonError(HttpStatusCode.NotFound, "Unknown artist") }
+        val unknownArtistEndpoint = MockEngine { respondJsonError(HttpStatusCode.NotFound, "non existing id") }
 
         val apiClient = SpotifyApiClientImpl(unknownArtistEndpoint)
         shouldThrow<ResourceNotFound> {
@@ -178,8 +179,15 @@ class SpotifyApiClientTest {
         val artists = apiClient.getSeveralArtists(requestedArtistIds)
 
         artists shouldHaveSize 2
-        artists[0].id shouldBe "12Chz98pHFMPJEknJQMWvI"
-        artists[1].id shouldBe "C7jy3rLJdDQY21OgRLCZ9sD"
+        artists[0].should {
+            it.shouldNotBeNull()
+            it.id shouldBe "12Chz98pHFMPJEknJQMWvI"
+        }
+
+        artists[1].should {
+            it.shouldNotBeNull()
+            it.id shouldBe "C7jy3rLJdDQY21OgRLCZ9sD"
+        }
     }
 
     @Test
@@ -222,7 +230,7 @@ class SpotifyApiClientTest {
     @Test
     fun `When getting albums of an unknown artist, then fail with ResourceNotFound`() = runBlockingTest {
         val failingArtistAlbumEndpoint = MockEngine {
-            respondJsonError(HttpStatusCode.NotFound, "Unknown artist")
+            respondJsonError(HttpStatusCode.NotFound, "non existing id")
         }
 
         val apiClient = SpotifyApiClientImpl(failingArtistAlbumEndpoint)
@@ -248,7 +256,7 @@ class SpotifyApiClientTest {
 
     @Test
     fun `When getting an unknown album then fail with ResourceNotFound`() = runBlockingTest {
-        val unknownAlbumEndpoint = MockEngine { respondJsonError(HttpStatusCode.NotFound, "Unknown album id") }
+        val unknownAlbumEndpoint = MockEngine { respondJsonError(HttpStatusCode.NotFound, "non existing id") }
 
         val apiClient = SpotifyApiClientImpl(unknownAlbumEndpoint)
         shouldThrow<ResourceNotFound> { apiClient.getAlbum("unknown_album_id") }
@@ -288,7 +296,7 @@ class SpotifyApiClientTest {
 
     @Test
     fun `When getting tracks of an unknown album then fail with ResourceNotFound`() = runBlockingTest {
-        val tracksOfUnknownAlbumEndpoint = MockEngine { respondJsonError(HttpStatusCode.NotFound, "Unknown album id") }
+        val tracksOfUnknownAlbumEndpoint = MockEngine { respondJsonError(HttpStatusCode.NotFound, "non existing id") }
 
         val apiClient = SpotifyApiClientImpl(tracksOfUnknownAlbumEndpoint)
         shouldThrow<ResourceNotFound> { apiClient.getAlbumTracks("unknown_album_id", 0, 20) }
@@ -315,7 +323,7 @@ class SpotifyApiClientTest {
 
     @Test
     fun `When getting an unknown track then fail with ResourceNotFound`() = runBlockingTest {
-        val unknownTrackEndpoint = MockEngine { respondJsonError(HttpStatusCode.NotFound, "Track not found") }
+        val unknownTrackEndpoint = MockEngine { respondJsonError(HttpStatusCode.NotFound, "non existing id") }
 
         val apiClient = SpotifyApiClientImpl(unknownTrackEndpoint)
         shouldThrow<ResourceNotFound> { apiClient.getTrack("unknown_track_id") }
@@ -339,6 +347,7 @@ class SpotifyApiClientTest {
 
         tracks shouldHaveSize 2
         tracks[0].should {
+            it.shouldNotBeNull()
             it.id shouldBe "7f0vVL3xi4i78Rv5Ptn2s1"
             it.name shouldBe "Algorithm"
             it.discNumber shouldBe 1
@@ -348,6 +357,7 @@ class SpotifyApiClientTest {
         }
 
         tracks[1].should {
+            it.shouldNotBeNull()
             it.id shouldBe "0dMYPDqcI4ca4cjqlmp9mE"
             it.name shouldBe "The Dark Side"
             it.discNumber shouldBe 1
@@ -386,7 +396,7 @@ class SpotifyApiClientTest {
 
     @Test
     fun `When getting features of an unknown track then fail with ResourceNotFound`() = runBlockingTest {
-        val unknownTrackEndpoint = MockEngine { respondJsonError(HttpStatusCode.NotFound, "Track does not exists") }
+        val unknownTrackEndpoint = MockEngine { respondJsonError(HttpStatusCode.NotFound, "non existing id") }
 
         val apiClient = SpotifyApiClientImpl(unknownTrackEndpoint)
         shouldThrow<ResourceNotFound> {
@@ -413,6 +423,7 @@ class SpotifyApiClientTest {
         multipleAudioFeatures shouldHaveSize 2
 
         multipleAudioFeatures[0].should {
+            it.shouldNotBeNull()
             it.id shouldBe "7f0vVL3xi4i78Rv5Ptn2s1"
             it.mode shouldBe MusicalMode.MAJOR
             it.key shouldBe Pitch.D
@@ -429,6 +440,7 @@ class SpotifyApiClientTest {
         }
 
         multipleAudioFeatures[1].should {
+            it.shouldNotBeNull()
             it.id shouldBe "5lnsL7pCg0fQKcWnlkD1F0"
             it.mode shouldBe MusicalMode.MAJOR
             it.key shouldBe Pitch.G

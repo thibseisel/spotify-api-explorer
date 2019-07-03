@@ -2,17 +2,17 @@ package com.github.thibseisel.sfyxplor
 
 import org.intellij.lang.annotations.Language
 
-const val TEST_TOKEN_STRING = "MTQ0NjJkZmQ5OTM2NDE1ZTZjNGZmZjI3"
+internal const val TEST_TOKEN_STRING = "MTQ0NjJkZmQ5OTM2NDE1ZTZjNGZmZjI3"
 
 @Language("JSON")
-val AUTH_TOKEN = """{
+internal val AUTH_TOKEN = """{
     "access_token": "MTQ0NjJkZmQ5OTM2NDE1ZTZjNGZmZjI3",
     "token_type": "bearer",
     "expires_in": 3600
 }""".trimIndent()
 
 @Language("JSON")
-val SINGLE_ARTIST = """{
+internal val SINGLE_ARTIST = """{
   "external_urls": {
     "spotify": "https://open.spotify.com/artist/12Chz98pHFMPJEknJQMWvI"
   },
@@ -43,7 +43,7 @@ val SINGLE_ARTIST = """{
 }""".trimIndent()
 
 @Language("JSON")
-val MULTIPLE_ARTISTS = """{
+internal val MULTIPLE_ARTISTS = """{
   "artists": [
     {
       "external_urls": {
@@ -107,10 +107,88 @@ val MULTIPLE_ARTISTS = """{
   ]
 }""".trimIndent()
 
-val ARTIST_ALBUMS: String get() = TODO("Incorrect JSON String")
+@Language("JSON")
+internal val ARTIST_ALBUMS: String = """{
+  "href": "https://api.spotify.com/v1/artists/12Chz98pHFMPJEknJQMWvI/albums?offset=0&limit=2&include_groups=album,single&market=FR",
+  "items": [
+    {
+      "album_group": "album",
+      "album_type": "album",
+      "artists": [
+        {
+          "external_urls": {
+            "spotify": "https://open.spotify.com/artist/12Chz98pHFMPJEknJQMWvI"
+          },
+          "href": "https://api.spotify.com/v1/artists/12Chz98pHFMPJEknJQMWvI",
+          "id": "12Chz98pHFMPJEknJQMWvI",
+          "name": "Muse",
+          "type": "artist",
+          "uri": "spotify:artist:12Chz98pHFMPJEknJQMWvI"
+        }
+      ],
+      "external_urls": {
+        "spotify": "https://open.spotify.com/album/5OZgDtx180ZZPMpm36J2zC"
+      },
+      "href": "https://api.spotify.com/v1/albums/5OZgDtx180ZZPMpm36J2zC",
+      "id": "5OZgDtx180ZZPMpm36J2zC",
+      "images": [
+        {
+          "height": 300,
+          "url": "https://i.scdn.co/image/0b2a261f7bec0ed109a149316d116c15ca72e5ef",
+          "width": 300
+        }
+      ],
+      "name": "Simulation Theory (Super Deluxe)",
+      "release_date": "2018-11-09",
+      "release_date_precision": "day",
+      "total_tracks": 21,
+      "type": "album",
+      "uri": "spotify:album:5OZgDtx180ZZPMpm36J2zC"
+    },
+    {
+      "album_group": "album",
+      "album_type": "album",
+      "artists": [
+        {
+          "external_urls": {
+            "spotify": "https://open.spotify.com/artist/12Chz98pHFMPJEknJQMWvI"
+          },
+          "href": "https://api.spotify.com/v1/artists/12Chz98pHFMPJEknJQMWvI",
+          "id": "12Chz98pHFMPJEknJQMWvI",
+          "name": "Muse",
+          "type": "artist",
+          "uri": "spotify:artist:12Chz98pHFMPJEknJQMWvI"
+        }
+      ],
+      "external_urls": {
+        "spotify": "https://open.spotify.com/album/2wart5Qjnvx1fd7LPdQxgJ"
+      },
+      "href": "https://api.spotify.com/v1/albums/2wart5Qjnvx1fd7LPdQxgJ",
+      "id": "2wart5Qjnvx1fd7LPdQxgJ",
+      "images": [
+        {
+          "height": 300,
+          "url": "https://i.scdn.co/image/8b6392caa83625135f0f53d6e2b0631bbe4c4c0b",
+          "width": 300
+        }
+      ],
+      "name": "Drones",
+      "release_date": "2015-06-04",
+      "release_date_precision": "day",
+      "total_tracks": 12,
+      "type": "album",
+      "uri": "spotify:album:2wart5Qjnvx1fd7LPdQxgJ"
+    }
+  ],
+  "limit": 2,
+  "next": "https://api.spotify.com/v1/artists/12Chz98pHFMPJEknJQMWvI/albums?offset=2&limit=2&include_groups=album,single&market=FR",
+  "offset": 0,
+  "previous": null,
+  "total": 46
+}""".trimIndent()
 
 @Language("JSON")
-val SINGLE_ALBUM = """{
+internal val SINGLE_ALBUM = """{
   "album_type": "album",
   "artists": [
     {
@@ -196,7 +274,7 @@ val SINGLE_ALBUM = """{
 }""".trimIndent()
 
 @Language("JSON")
-val MULTIPLE_ALBUMS = """{
+internal val MULTIPLE_ALBUMS = """{
   "albums": [
     {
       "album_type": "album",
@@ -374,7 +452,7 @@ val MULTIPLE_ALBUMS = """{
 }""".trimIndent()
 
 @Language("JSON")
-val ALBUM_TRACKS = """{
+internal val ALBUM_TRACKS = """{
   "href": "https://api.spotify.com/v1/albums/5OZgDtx180ZZPMpm36J2zC/tracks?offset=0&limit=2&market=FR",
   "items": [
     {
@@ -444,7 +522,7 @@ val ALBUM_TRACKS = """{
 }"""
 
 @Language("JSON")
-val SINGLE_TRACK = """{
+internal val SINGLE_TRACK = """{
   "album": {
     "album_type": "album",
     "artists": [
@@ -512,7 +590,7 @@ val SINGLE_TRACK = """{
 }""".trimIndent()
 
 @Language("JSON")
-val MULTIPLE_TRACKS = """{
+internal val MULTIPLE_TRACKS = """{
   "tracks": [
     {
       "album": {
@@ -650,7 +728,7 @@ val MULTIPLE_TRACKS = """{
 }""".trimIndent()
 
 @Language("JSON")
-val SINGLE_AUDIO_FEATURES = """{
+internal val SINGLE_AUDIO_FEATURES = """{
   "danceability": 0.522,
   "energy": 0.923,
   "key": 2,
@@ -672,7 +750,7 @@ val SINGLE_AUDIO_FEATURES = """{
 }""".trimIndent()
 
 @Language("JSON")
-val MULTIPLE_AUDIO_FEATURES = """{
+internal val MULTIPLE_AUDIO_FEATURES = """{
   "audio_features": [
     {
       "danceability": 0.522,
@@ -718,7 +796,7 @@ val MULTIPLE_AUDIO_FEATURES = """{
 }""".trimIndent()
 
 @Language("JSON")
-val SEARCH_RESULTS = """{
+internal val SEARCH_RESULTS = """{
   "albums": {
     "href": "https://api.spotify.com/v1/search?query=rammstein&type=album&market=FR&offset=0&limit=10",
     "items": [

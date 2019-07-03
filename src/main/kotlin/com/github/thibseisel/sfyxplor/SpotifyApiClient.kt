@@ -105,103 +105,119 @@ interface SpotifyApiClient {
     suspend fun search(query: String, types: Set<SearchType>, offset: Int = 0, limit: Int = 20): Paging<SearchableResource>
 
     /**
-     * Retrieve the detail of an artist identified by its unique id.
+     * Get Spotify catalog information for a single artist identified by its unique Spotify ID.
      *
-     * @param id The unique identifier of that artist.
-     * @return A detailed artist object.
+     * @param id The Spotify ID for the artist.
+     * @return The detailed information of this artist.
      *
      * @throws ResourceNotFound If the requested [id] does not match an existing artist.
-     * @throws SpotifyApiException
      */
     suspend fun getArtist(id: String): Artist
 
     /**
-     * Retrieve the detail of multiple artists, each identified by their id.
-     * TODO Specify what happen when one artist id does not match.
+     * Get Spotify catalog information for several artists based on their Spotify IDs.
+     * If an artist is not found, a `null` is returned at the appropriate position.
+     * Duplicates in [ids] results in duplicates in the returned artists.
      *
-     * @param ids The ids of each artist, maximum `50`.
-     * @return The detail for each requested artist, in order.
-     *
-     * @throws SpotifyApiException
+     * @param ids The Spotify IDs for the artists. Maximum `50` IDs.
+     * @return The information for each artist, in the order requested.
      */
-    suspend fun getSeveralArtists(ids: List<String>): List<Artist>
+    suspend fun getSeveralArtists(ids: List<String>): List<Artist?>
 
     /**
-     * Retrieve albums that have been produced by a given artist identified by its [id][artistId].
-     * Results are paginated, which means
+     * Get Spotify catalog information about an artist’s albums.
      *
-     * @param artistId The unique identifier of the artist.
-     * @param offset
-     * @param limit
+     * @param artistId The Spotify ID for the artist.
+     * @param offset The index of the first album to return. Default: `0` (i.e., the first album).
+     * Use with [limit] to get the next set of albums.
+     * @param limit The number of albums to return. Default: `20`. Minimum: `1`. Maximum: `50`.
      *
-     * @throws ResourceNotFound
-     * @throws SpotifyApiException
+     * @return A paginated list of albums where the requested artist participates.
+     * @throws ResourceNotFound If the requested artist does not exist.
      */
     suspend fun getArtistAlbums(artistId: String, offset: Int = 0, limit: Int = 20): Paging<Album>
 
     /**
-     * @param id
+     * Get Spotify catalog information for a single album.
      *
-     * @throws ResourceNotFound
-     * @throws SpotifyApiException
+     * @param id The Spotify ID for the album.
+     *
+     * @return The detailed information of this album.
+     * @throws ResourceNotFound If the requested album does not exist.
      */
     suspend fun getAlbum(id: String): Album
 
     /**
-     * @param ids
+     * Get Spotify catalog information for multiple albums identified by their Spotify IDs.
+     * If an album is not found, a `null` is returned at the appropriate position.
+     * Duplicates in [ids] results in duplicates in the returned albums.
      *
-     * @throws SpotifyApiException
+     * @param ids The Spotify IDs for the albums. Maximum: `20` IDs.
+     * @return The information for each album, in the order requested.
      */
-    suspend fun getSeveralAlbums(ids: List<String>): List<Album>
+    suspend fun getSeveralAlbums(ids: List<String>): List<Album?>
 
     /**
-     * @param albumId
-     * @param offset
-     * @param limit
+     * Get Spotify catalog information about an album’s tracks.
      *
-     * @throws ResourceNotFound
-     * @throws SpotifyApiException
+     * @param albumId The SpotifyID for the album.
+     * @param offset The index of the first track to return. Default: `0`.
+     * Use with limit to get the next set of tracks.
+     * @param limit The maximum number of tracks to return. Default: `20`. Minimum: `1`. Maximum: `50`.
+     *
+     * @return A paginated list of tracks from the requested album.
+     * @throws ResourceNotFound If the requested album does not exist.
      */
     suspend fun getAlbumTracks(albumId: String, offset: Int = 0, limit: Int = 20): Paging<Track>
 
     /**
-     * @param id
+     * Get Spotify catalog information for a single track identified by its unique Spotify ID.
+     * @param id The Spotify ID for the track.
      *
-     * @throws ResourceNotFound
-     * @throws SpotifyApiException
+     * @return The detailed information of this track.
+     * @throws ResourceNotFound If the requested track does not exist.
      */
     suspend fun getTrack(id: String): Track
 
     /**
-     * @param ids
+     * Get Spotify catalog information for multiple tracks identified by their Spotify IDs.
+     * If a track is not found, a `null` is returned at the appropriate position.
+     * Duplicates in [ids] results in duplicates in the returned tracks.
      *
-     * @throws SpotifyApiException
+     * @param ids The Spotify IDs for the tracks. Maximum: `50` IDs.
+     * @return The information for each track, in the order requested.
      */
-    suspend fun getSeveralTracks(ids: List<String>): List<Track>
+    suspend fun getSeveralTracks(ids: List<String>): List<Track?>
 
     /**
-     * @param trackIds
+     * Get audio feature information for a single track identified by its unique Spotify ID.
+     * @param trackId The Spotify ID for the track.
      *
-     * @throws SpotifyApiException
-     */
-    suspend fun getSeveralTrackFeatures(trackIds: List<String>): List<AudioFeatures>
-
-    /**
-     * @param trackId
-     *
-     * @throws ResourceNotFound
-     * @throws SpotifyApiException
+     * @return The audio features for the requested track.
+     * @throws ResourceNotFound If the requested track does not exist.
      */
     suspend fun getTrackFeatures(trackId: String): AudioFeatures
+
+    /**
+     * Get audio features for multiple tracks based on their Spotify IDs.
+     * If a track is not found, a `null` is returned at the appropriate position.
+     * Duplicates in [trackIds] results in duplicates in the returned tracks' features.
+     *
+     * @param trackIds The Spotify IDs for the tracks. Maximum: `100` IDs.
+     * @return The audio features for each track, in the order requested.
+     */
+    suspend fun getSeveralTrackFeatures(trackIds: List<String>): List<AudioFeatures?>
 
     companion object {
         internal const val QUERY_IDS = "ids"
         internal const val QUERY_TYPE = "type"
         internal const val QUERY_INCLUDE_GROUPS = "include_groups"
+
+        operator fun invoke(engine: HttpClientEngine): SpotifyApiClient = SpotifyApiClientImpl(engine)
     }
 }
 
-class SpotifyApiClientImpl
+internal class SpotifyApiClientImpl
 @TestOnly constructor(
     engine: HttpClientEngine,
     private var authToken: OAuthToken?
@@ -307,7 +323,7 @@ class SpotifyApiClientImpl
         url { encodedPath = "v1/artists/$id" }
     }
 
-    override suspend fun getSeveralArtists(ids: List<String>): List<Artist> = spotifyService.get {
+    override suspend fun getSeveralArtists(ids: List<String>): List<Artist?> = spotifyService.get {
         url {
             encodedPath = "v1/artists"
             parameters.appendAll("ids", ids)
@@ -325,7 +341,7 @@ class SpotifyApiClientImpl
         url { encodedPath = "v1/albums/$id" }
     }
 
-    override suspend fun getSeveralAlbums(ids: List<String>): List<Album> = spotifyService.get {
+    override suspend fun getSeveralAlbums(ids: List<String>): List<Album?> = spotifyService.get {
         url {
             encodedPath = "v1/albums"
             parameters.appendAll("ids", ids)
@@ -340,7 +356,7 @@ class SpotifyApiClientImpl
         url { encodedPath = "v1/tracks/$id" }
     }
 
-    override suspend fun getSeveralTracks(ids: List<String>): List<Track> = spotifyService.get {
+    override suspend fun getSeveralTracks(ids: List<String>): List<Track?> = spotifyService.get {
         url {
             encodedPath = "v1/tracks"
             parameters.appendAll("ids", ids)
@@ -351,7 +367,7 @@ class SpotifyApiClientImpl
         url { encodedPath = "v1/audio-features/$trackId" }
     }
 
-    override suspend fun getSeveralTrackFeatures(trackIds: List<String>): List<AudioFeatures> = spotifyService.get {
+    override suspend fun getSeveralTrackFeatures(trackIds: List<String>): List<AudioFeatures?> = spotifyService.get {
         url {
             encodedPath = "v1/audio-features"
             parameters.appendAll("ids", trackIds)
