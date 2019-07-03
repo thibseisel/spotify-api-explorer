@@ -52,8 +52,8 @@ class AudioFeatures(
      * A confidence measure from `0.0` to `1.0` of whether the track is acoustic.
      * `1.0` represents high confidence the track is acoustic.
      */
-    @SerializedName("accoustiness")
-    val accousticness: Float,
+    @SerializedName("acousticness")
+    val acousticness: Float,
 
     /**
      * Danceability describes how suitable a track is for dancing based on a combination of musical elements

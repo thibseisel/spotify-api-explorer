@@ -2,6 +2,15 @@ package com.github.thibseisel.sfyxplor
 
 import org.intellij.lang.annotations.Language
 
+const val TEST_TOKEN_STRING = "MTQ0NjJkZmQ5OTM2NDE1ZTZjNGZmZjI3"
+
+@Language("JSON")
+val AUTH_TOKEN = """{
+    "access_token": "MTQ0NjJkZmQ5OTM2NDE1ZTZjNGZmZjI3",
+    "token_type": "bearer",
+    "expires_in": 3600
+}""".trimIndent()
+
 @Language("JSON")
 val SINGLE_ARTIST = """{
   "external_urls": {
@@ -98,134 +107,7 @@ val MULTIPLE_ARTISTS = """{
   ]
 }""".trimIndent()
 
-@Language("JSON")
-val ARTIST_ALBUMS = """{
-  "album_type": "album",
-  "artists": [
-    {
-      "external_urls": {
-        "spotify": "https://open.spotify.com/artist/12Chz98pHFMPJEknJQMWvI"
-      },
-      "href": "https://api.spotify.com/v1/artists/12Chz98pHFMPJEknJQMWvI",
-      "id": "12Chz98pHFMPJEknJQMWvI",
-      "name": "Muse",
-      "type": "artist",
-      "uri": "spotify:artist:12Chz98pHFMPJEknJQMWvI"
-    }
-  ],
-  "copyrights": [
-    {
-      "text": "2018, Muse under exclusive licence to Warner Music UK Limited",
-      "type": "C"
-    },
-    {
-      "text": "2018, Muse under exclusive licence to Warner Music UK Limited with the exception of track 10 2017, Muse under exclusive licence to Warner Music UK",
-      "type": "P"
-    }
-  ],
-  "external_ids": {
-    "upc": "190295559205"
-  },
-  "external_urls": {
-    "spotify": "https://open.spotify.com/album/5OZgDtx180ZZPMpm36J2zC"
-  },
-  "genres": [],
-  "href": "https://api.spotify.com/v1/albums/5OZgDtx180ZZPMpm36J2zC",
-  "id": "5OZgDtx180ZZPMpm36J2zC",
-  "images": [
-    {
-      "height": 640,
-      "url": "https://i.scdn.co/image/9a0ef2cbc0388e12b08a9f7915011440ee223835",
-      "width": 640
-    },
-    {
-      "height": 300,
-      "url": "https://i.scdn.co/image/0b2a261f7bec0ed109a149316d116c15ca72e5ef",
-      "width": 300
-    },
-    {
-      "height": 64,
-      "url": "https://i.scdn.co/image/28a8487234c901ae9fe127d1d0eef738a91e46d6",
-      "width": 64
-    }
-  ],
-  "label": "Warner Bros.",
-  "name": "Simulation Theory (Super Deluxe)",
-  "popularity": 73,
-  "release_date": "2018-11-09",
-  "release_date_precision": "day",
-  "total_tracks": 21,
-  "tracks": {
-    "href": "https://api.spotify.com/v1/albums/5OZgDtx180ZZPMpm36J2zC/tracks?offset=0&limit=50&market=FR",
-    "items": [
-      {
-        "artists": [
-          {
-            "external_urls": {
-              "spotify": "https://open.spotify.com/artist/12Chz98pHFMPJEknJQMWvI"
-            },
-            "href": "https://api.spotify.com/v1/artists/12Chz98pHFMPJEknJQMWvI",
-            "id": "12Chz98pHFMPJEknJQMWvI",
-            "name": "Muse",
-            "type": "artist",
-            "uri": "spotify:artist:12Chz98pHFMPJEknJQMWvI"
-          }
-        ],
-        "disc_number": 1,
-        "duration_ms": 245960,
-        "explicit": false,
-        "external_urls": {
-          "spotify": "https://open.spotify.com/track/7f0vVL3xi4i78Rv5Ptn2s1"
-        },
-        "href": "https://api.spotify.com/v1/tracks/7f0vVL3xi4i78Rv5Ptn2s1",
-        "id": "7f0vVL3xi4i78Rv5Ptn2s1",
-        "is_local": false,
-        "is_playable": true,
-        "name": "Algorithm",
-        "preview_url": "https://p.scdn.co/mp3-preview/00d386644c07673f05878e337f977911c0ba740b?cid=774b29d4f13844c495f206cafdad9c86",
-        "track_number": 1,
-        "type": "track",
-        "uri": "spotify:track:7f0vVL3xi4i78Rv5Ptn2s1"
-      },
-      {
-        "artists": [
-          {
-            "external_urls": {
-              "spotify": "https://open.spotify.com/artist/12Chz98pHFMPJEknJQMWvI"
-            },
-            "href": "https://api.spotify.com/v1/artists/12Chz98pHFMPJEknJQMWvI",
-            "id": "12Chz98pHFMPJEknJQMWvI",
-            "name": "Muse",
-            "type": "artist",
-            "uri": "spotify:artist:12Chz98pHFMPJEknJQMWvI"
-          }
-        ],
-        "disc_number": 1,
-        "duration_ms": 227213,
-        "explicit": false,
-        "external_urls": {
-          "spotify": "https://open.spotify.com/track/0dMYPDqcI4ca4cjqlmp9mE"
-        },
-        "href": "https://api.spotify.com/v1/tracks/0dMYPDqcI4ca4cjqlmp9mE",
-        "id": "0dMYPDqcI4ca4cjqlmp9mE",
-        "is_local": false,
-        "is_playable": true,
-        "name": "The Dark Side",
-        "preview_url": "https://p.scdn.co/mp3-preview/5995cbc458c74a9f4beb50ca250a9920d3b1d8ab?cid=774b29d4f13844c495f206cafdad9c86",
-        "track_number": 2,
-        "type": "track",
-        "uri": "spotify:track:0dMYPDqcI4ca4cjqlmp9mE"
-      }
-    ],
-    "limit": 50,
-    "next": null,
-    "offset": 0,
-    "previous": null,
-    "total": 2
-  },
-  "type": "album",
-  "uri": "spotify:album:5OZgDtx180ZZPMpm36J2zC"
-}"""
+val ARTIST_ALBUMS: String get() = TODO("Incorrect JSON String")
 
 @Language("JSON")
 val SINGLE_ALBUM = """{
