@@ -1,5 +1,4 @@
 val ktor_version: String by project
-val kotlin_version: String by project
 val koroutines_version: String by project
 val koin_version: String by project
 val logback_version: String by project
@@ -9,7 +8,7 @@ apply(from = "gradle/credentials.gradle.kts")
 
 plugins {
     application
-    kotlin("jvm") version "1.3.40"
+    kotlin("jvm") version "1.3.41"
 }
 
 group = "spotify-api-explorer"
@@ -43,7 +42,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
+    implementation(kotlin("stdlib-jdk8"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$koroutines_version")
 
     implementation("io.ktor:ktor-server-core:$ktor_version")
