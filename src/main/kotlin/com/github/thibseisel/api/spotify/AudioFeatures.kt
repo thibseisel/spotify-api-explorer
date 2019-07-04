@@ -1,6 +1,6 @@
 package com.github.thibseisel.api.spotify
 
-import com.google.gson.annotations.SerializedName
+import com.google.gson.annotations.*
 
 class AudioFeatures(
 

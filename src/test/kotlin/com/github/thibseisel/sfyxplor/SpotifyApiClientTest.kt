@@ -263,6 +263,43 @@ class SpotifyApiClientTest {
     }
 
     @Test
+    fun `When getting multiple albums then call albums endpoint with their ids`() = runBlockingTest {
+        val requestedAlbumIds = listOf("5OZgDtx180ZZPMpm36J2zC", "7jy3rLJdDQY21OgRLCZ9sD")
+
+        val albumsEndpoint = MockEngine { request ->
+            request shouldGetOnSpotifyEndpoint "v1/albums"
+
+            val receivedIds = request.url.parameters.getAll(SpotifyApiClient.QUERY_IDS)
+            receivedIds shouldContainExactly requestedAlbumIds
+
+            respondJson(MULTIPLE_ALBUMS)
+        }
+
+        val apiClient = SpotifyApiClientImpl(albumsEndpoint)
+        val albums = apiClient.getSeveralAlbums(requestedAlbumIds)
+
+        albums shouldHaveSize 2
+
+        albums[0].should {
+            it.shouldNotBeNull()
+            it.id shouldBe "7jy3rLJdDQY21OgRLCZ9sD"
+            it.name shouldBe "Simulation Theory (Super Deluxe)"
+            it.releaseDate shouldBe "2018-11-09"
+            it.releaseDatePrecision shouldBe "day"
+            it.images shouldHaveSize 1
+        }
+
+        albums[1].should {
+            it.shouldNotBeNull()
+            it.id shouldBe "7jy3rLJdDQY21OgRLCZ9sD"
+            it.name shouldBe "Concrete and Gold"
+            it.releaseDate shouldBe "2017-09-15"
+            it.releaseDatePrecision shouldBe "day"
+            it.images shouldHaveSize 1
+        }
+    }
+
+    @Test
     fun `When getting an album's tracks then call album tracks endpoint with its id`() = runBlockingTest {
         val albumTracksEndpoint = MockEngine { request ->
             request shouldGetOnSpotifyEndpoint "v1/albums/5OZgDtx180ZZPMpm36J2zC/tracks"
@@ -470,6 +507,24 @@ class SpotifyApiClientTest {
 
         val apiClient = SpotifyApiClientImpl(searchEndpoint)
         TODO("Implement a search result payload")
+    }
+
+    @Test
+    fun `When requesting too much resources at one time, then fail with IllegalArgumentException`() = runBlockingTest {
+        val stubEngine = MockEngine { fail("Expected no network call.") }
+        val apiClient = SpotifyApiClientImpl(stubEngine)
+
+        val artistIds = List(51) { "12Chz98pHFMPJEknJQMWvI" }
+        shouldThrow<IllegalArgumentException> { apiClient.getSeveralArtists(artistIds) }
+
+        val albumIds = List(21) { "5OZgDtx180ZZPMpm36J2zC" }
+        shouldThrow<IllegalArgumentException> { apiClient.getSeveralAlbums(albumIds) }
+
+        val trackIds = List(51) { "7f0vVL3xi4i78Rv5Ptn2s1" }
+        shouldThrow<IllegalArgumentException> { apiClient.getSeveralTracks(trackIds) }
+
+        val trackFeatureIds = List(101) { "7f0vVL3xi4i78Rv5Ptn2s1" }
+        shouldThrow<IllegalArgumentException> { apiClient.getSeveralTrackFeatures(trackFeatureIds) }
     }
 
     private infix fun HttpRequestData.shouldGetOnSpotifyEndpoint(spotifyApiEndpoint: String) {

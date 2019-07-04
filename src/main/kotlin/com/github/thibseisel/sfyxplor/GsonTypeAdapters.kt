@@ -8,8 +8,9 @@ import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
+import java.lang.reflect.*
 
-class MusicalModeJsonAdapter : TypeAdapter<MusicalMode>() {
+internal class MusicalModeJsonAdapter : TypeAdapter<MusicalMode>() {
 
     override fun write(writer: JsonWriter, mode: MusicalMode?) {
         if (mode == null) {
@@ -34,7 +35,7 @@ class MusicalModeJsonAdapter : TypeAdapter<MusicalMode>() {
     }
 }
 
-class SpotifyPitchJsonAdapter : TypeAdapter<Pitch?>() {
+internal class SpotifyPitchJsonAdapter : TypeAdapter<Pitch?>() {
 
     override fun write(writer: JsonWriter, pitch: Pitch?) {
         if (pitch == null) {
@@ -68,60 +69,104 @@ class SpotifyPitchJsonAdapter : TypeAdapter<Pitch?>() {
     }
 }
 
-class SearchableAdapterFactory : TypeAdapterFactory {
+internal class SearchableAdapter(
+    private val factory: TypeAdapterFactory,
+    private val gson: Gson,
+    private val type: TypeToken<SearchableResource>
+) : TypeAdapter<SearchableResource?>() {
 
-    override fun <T : Any?> create(gson: Gson, type: TypeToken<T>): TypeAdapter<T>? {
-        if (type.rawType != SearchableResource::class.java) {
-            return null
+    object Factory : TypeAdapterFactory {
+        override fun <T : Any?> create(gson: Gson, type: TypeToken<T>): TypeAdapter<T>? {
+            if (type.rawType != SearchableResource::class.java) {
+                return null
+            }
+
+            @Suppress("unchecked_cast")
+            return SearchableAdapter(this, gson, type as TypeToken<SearchableResource>) as TypeAdapter<T>
         }
-
-        @Suppress("unchecked_cast")
-        return SearchableAdapter(this, gson, type as TypeToken<SearchableResource>) as TypeAdapter<T>
     }
 
-    private class SearchableAdapter(
-        private val factory: TypeAdapterFactory,
-        private val gson: Gson,
-        private val type: TypeToken<SearchableResource>
-    ) : TypeAdapter<SearchableResource?>() {
+    override fun write(writer: JsonWriter, value: SearchableResource?) {
+        if (value == null) {
+            writer.nullValue()
+        } else {
+            val serializer = gson.getDelegateAdapter(factory, type)
+            serializer.write(writer, value)
+        }
+    }
 
-        override fun write(writer: JsonWriter, value: SearchableResource?) {
-            if (value == null) {
-                writer.nullValue()
-            } else {
-                val serializer = gson.getDelegateAdapter(factory, type)
-                serializer.write(writer, value)
+    override fun read(reader: JsonReader): SearchableResource? {
+        when (reader.peek()) {
+            JsonToken.NULL -> {
+                reader.nextNull()
+                return null
             }
+
+            JsonToken.BEGIN_OBJECT -> {
+                val resourceJsonObject = Streams.parse(reader).asJsonObject
+                val resourceType = getTargetType(resourceJsonObject)
+
+                val deserializer = gson.getDelegateAdapter(factory, resourceType)
+                return deserializer.fromJsonTree(resourceJsonObject)
+            }
+
+            else -> throw JsonParseException("Unable to deserialize to a $type: JSON is not an object.")
+        }
+    }
+
+    private fun getTargetType(json: JsonObject): TypeToken<out SearchableResource> {
+        val targetClass = when(val jsonType = json["type"].asString) {
+            "artist" -> Artist::class.java
+            "album" -> Album::class.java
+            "track" -> Track::class.java
+            else -> throw JsonParseException("Unable to identify resource from its \"type\" property ($jsonType)")
         }
 
-        override fun read(reader: JsonReader): SearchableResource? {
-            when (reader.peek()) {
-                JsonToken.NULL -> {
-                    reader.nextNull()
-                    return null
-                }
+        return TypeToken.get(targetClass)
+    }
+}
 
-                JsonToken.BEGIN_OBJECT -> {
-                    val resourceJsonObject = Streams.parse(reader).asJsonObject
-                    val resourceType = getTargetType(resourceJsonObject)
+internal class JsonWrapperTypeAdapter(
+    private val elementsTypeAdapter: TypeAdapter<*>
+) : TypeAdapter<JsonWrapper<*>?>() {
 
-                    val deserializer = gson.getDelegateAdapter(factory, resourceType)
-                    return deserializer.fromJsonTree(resourceJsonObject)
-                }
+    override fun write(writer: JsonWriter, value: JsonWrapper<*>?) {
+        throw UnsupportedOperationException("Payload can only be de-serialized.")
+    }
 
-                else -> throw JsonParseException("Unable to deserialize to a $type: JSON is not an object.")
-            }
+    override fun read(reader: JsonReader): JsonWrapper<*>? = when (reader.peek()) {
+        JsonToken.NULL -> {
+            reader.nextNull()
+            null
         }
 
-        private fun getTargetType(json: JsonObject): TypeToken<out SearchableResource> {
-            val targetClass = when(val jsonType = json["type"].asString) {
-                "artist" -> Artist::class.java
-                "album" -> Album::class.java
-                "track" -> Track::class.java
-                else -> throw JsonParseException("Unable to identify resource from its \"type\" property ($jsonType)")
-            }
+        JsonToken.BEGIN_OBJECT -> {
+            reader.beginObject()
+            val propertyName = reader.nextName()
+            val elements = mutableListOf<Any?>()
 
-            return TypeToken.get(targetClass)
+            reader.beginArray()
+            while (reader.hasNext()) {
+                elements += elementsTypeAdapter.read(reader)
+            }
+            reader.endArray()
+            reader.endObject()
+
+            JsonWrapper(propertyName, elements)
+        }
+
+        else -> throw JsonParseException("Unable to de-serialize to a Payload")
+    }
+
+    object Factory : TypeAdapterFactory {
+
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : Any?> create(gson: Gson, type: TypeToken<T>): TypeAdapter<T>? {
+            if (type.rawType != Payload::class.java) return null
+
+            val arrayElementType = (type.type as ParameterizedType).actualTypeArguments[0]
+            val contentTypeAdapter = gson.getDelegateAdapter(this, TypeToken.get(arrayElementType))
+            return JsonWrapperTypeAdapter(contentTypeAdapter) as TypeAdapter<T>
         }
     }
 }
