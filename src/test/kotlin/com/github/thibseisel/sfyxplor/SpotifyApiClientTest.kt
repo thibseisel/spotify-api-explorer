@@ -164,7 +164,7 @@ class SpotifyApiClientTest {
 
     @Test
     fun `When getting multiple artists then call artists endpoint with their ids`() = runBlockingTest {
-        val requestedArtistIds = listOf("12Chz98pHFMPJEknJQMWvI", "C7jy3rLJdDQY21OgRLCZ9sD")
+        val requestedArtistIds = listOf("12Chz98pHFMPJEknJQMWvI", "7jy3rLJdDQY21OgRLCZ9sD")
 
         val severalArtistsEndpoint = MockEngine { request ->
             request shouldGetOnSpotifyEndpoint "v1/artists"
@@ -182,11 +182,19 @@ class SpotifyApiClientTest {
         artists[0].should {
             it.shouldNotBeNull()
             it.id shouldBe "12Chz98pHFMPJEknJQMWvI"
+            it.name shouldBe "Muse"
+            it.popularity shouldBe 82
+            it.genres.shouldContainExactly("modern rock", "permanent wave", "piano rock", "post-grunge", "rock")
+            it.images shouldHaveSize 1
         }
 
         artists[1].should {
             it.shouldNotBeNull()
-            it.id shouldBe "C7jy3rLJdDQY21OgRLCZ9sD"
+            it.id shouldBe "7jy3rLJdDQY21OgRLCZ9sD"
+            it.name shouldBe "Foo Fighters"
+            it.popularity shouldBe 82
+            it.genres.shouldContainExactly("alternative metal", "alternative rock", "modern rock", "permanent wave", "post-grunge", "rock")
+            it.images shouldHaveSize 1
         }
     }
 
@@ -204,7 +212,7 @@ class SpotifyApiClientTest {
         }
 
         val apiClient = SpotifyApiClientImpl(artistAlbumsEndpoint)
-        val paginatedAlbums = apiClient.getArtistAlbums("12Chz98pHFMPJEknJQMWvI", 0, 20)
+        val paginatedAlbums = apiClient.getArtistAlbums("12Chz98pHFMPJEknJQMWvI", 20, 0)
 
         paginatedAlbums.total shouldBe 46
         val items = paginatedAlbums.items
@@ -234,7 +242,7 @@ class SpotifyApiClientTest {
         }
 
         val apiClient = SpotifyApiClientImpl(failingArtistAlbumEndpoint)
-        shouldThrow<ResourceNotFound> { apiClient.getArtistAlbums("unknown_artist_id", 0, 20) }
+        shouldThrow<ResourceNotFound> { apiClient.getArtistAlbums("unknown_artist_id", 20, 0) }
     }
 
     @Test
@@ -264,7 +272,7 @@ class SpotifyApiClientTest {
 
     @Test
     fun `When getting multiple albums then call albums endpoint with their ids`() = runBlockingTest {
-        val requestedAlbumIds = listOf("5OZgDtx180ZZPMpm36J2zC", "7jy3rLJdDQY21OgRLCZ9sD")
+        val requestedAlbumIds = listOf("5OZgDtx180ZZPMpm36J2zC", "6KMkuqIwKkwUhUYRPL6dUc")
 
         val albumsEndpoint = MockEngine { request ->
             request shouldGetOnSpotifyEndpoint "v1/albums"
@@ -282,7 +290,7 @@ class SpotifyApiClientTest {
 
         albums[0].should {
             it.shouldNotBeNull()
-            it.id shouldBe "7jy3rLJdDQY21OgRLCZ9sD"
+            it.id shouldBe "5OZgDtx180ZZPMpm36J2zC"
             it.name shouldBe "Simulation Theory (Super Deluxe)"
             it.releaseDate shouldBe "2018-11-09"
             it.releaseDatePrecision shouldBe "day"
@@ -291,7 +299,7 @@ class SpotifyApiClientTest {
 
         albums[1].should {
             it.shouldNotBeNull()
-            it.id shouldBe "7jy3rLJdDQY21OgRLCZ9sD"
+            it.id shouldBe "6KMkuqIwKkwUhUYRPL6dUc"
             it.name shouldBe "Concrete and Gold"
             it.releaseDate shouldBe "2017-09-15"
             it.releaseDatePrecision shouldBe "day"
@@ -307,7 +315,7 @@ class SpotifyApiClientTest {
         }
 
         val apiClient = SpotifyApiClientImpl(albumTracksEndpoint)
-        val paginatedTracks = apiClient.getAlbumTracks("5OZgDtx180ZZPMpm36J2zC", 0, 20)
+        val paginatedTracks = apiClient.getAlbumTracks("5OZgDtx180ZZPMpm36J2zC", 20, 0)
 
         paginatedTracks.total shouldBe 21
         paginatedTracks.items shouldHaveSize 2
@@ -336,7 +344,7 @@ class SpotifyApiClientTest {
         val tracksOfUnknownAlbumEndpoint = MockEngine { respondJsonError(HttpStatusCode.NotFound, "non existing id") }
 
         val apiClient = SpotifyApiClientImpl(tracksOfUnknownAlbumEndpoint)
-        shouldThrow<ResourceNotFound> { apiClient.getAlbumTracks("unknown_album_id", 0, 20) }
+        shouldThrow<ResourceNotFound> { apiClient.getAlbumTracks("unknown_album_id", 20, 0) }
     }
 
     @Test
@@ -481,7 +489,7 @@ class SpotifyApiClientTest {
             it.id shouldBe "5lnsL7pCg0fQKcWnlkD1F0"
             it.mode shouldBe MusicalMode.MAJOR
             it.key shouldBe Pitch.G
-            it.tempo shouldBe 142.686f
+            it.tempo shouldBe 142.684f
             it.signature shouldBe 4
             it.loudness shouldBe -8.245f
             it.energy shouldBe 0.631f

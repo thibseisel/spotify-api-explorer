@@ -127,11 +127,21 @@ internal class SearchableAdapter(
 }
 
 internal class JsonWrapperTypeAdapter(
-    private val elementsTypeAdapter: TypeAdapter<*>
-) : TypeAdapter<JsonWrapper<*>?>() {
+    private val elementsTypeAdapter: TypeAdapter<Any?>
+) : TypeAdapter<JsonWrapper<Any?>?>() {
 
-    override fun write(writer: JsonWriter, value: JsonWrapper<*>?) {
-        throw UnsupportedOperationException("Payload can only be de-serialized.")
+    override fun write(writer: JsonWriter, value: JsonWrapper<Any?>?) {
+        if (value == null) {
+            writer.nullValue()
+        } else {
+            writer.beginObject()
+            writer.name(value.propertyName)
+
+            writer.beginArray()
+            for (element in value.payload) {
+                elementsTypeAdapter.write(writer, element)
+            }
+        }
     }
 
     override fun read(reader: JsonReader): JsonWrapper<*>? = when (reader.peek()) {
@@ -162,10 +172,11 @@ internal class JsonWrapperTypeAdapter(
 
         @Suppress("UNCHECKED_CAST")
         override fun <T : Any?> create(gson: Gson, type: TypeToken<T>): TypeAdapter<T>? {
-            if (type.rawType != Payload::class.java) return null
+            if (type.rawType != JsonWrapper::class.java) return null
 
             val arrayElementType = (type.type as ParameterizedType).actualTypeArguments[0]
-            val contentTypeAdapter = gson.getDelegateAdapter(this, TypeToken.get(arrayElementType))
+            val arrayElementTypeToken = TypeToken.get(arrayElementType)
+            val contentTypeAdapter = gson.getDelegateAdapter(this, arrayElementTypeToken) as TypeAdapter<Any?>
             return JsonWrapperTypeAdapter(contentTypeAdapter) as TypeAdapter<T>
         }
     }
