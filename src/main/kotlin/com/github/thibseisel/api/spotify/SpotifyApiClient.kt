@@ -1,6 +1,5 @@
-package com.github.thibseisel.sfyxplor
+package com.github.thibseisel.api.spotify
 
-import com.github.thibseisel.api.spotify.*
 import com.google.gson.annotations.*
 import io.ktor.client.*
 import io.ktor.client.engine.*
@@ -36,6 +35,18 @@ private suspend fun ByteReadChannel.readText(): String = buildString {
 internal class JsonWrapper<out T>(
     val propertyName: String,
     val payload: List<T>
+)
+
+class SearchResults(
+
+    @SerializedName("artists")
+    val artists: Paging<Artist>,
+
+    @SerializedName("albums")
+    val albums: Paging<Album>,
+
+    @SerializedName("tracks")
+    val tracks: Paging<Track>
 )
 
 /**
@@ -85,14 +96,6 @@ class AuthenticationRequired : SpotifyApiException()
 class ResourceNotFound : SpotifyApiException()
 
 /**
- * Thrown when the request rate limit imposed by the Spotify Web API has been exceeded.
- * It is safe to re-attempt to access the same resource after the specified [delay][retryAfter] has elapsed.
- *
- * @property retryAfter The number of seconds to wait before re-attempting to access resources from the API.
- */
-class ReachedRateLimit(val retryAfter: Int) : SpotifyApiException()
-
-/**
  * Thrown when the Spotify Web API responded with an unexpected error.
  *
  * @property status The HTTP status code associated with the response.
@@ -136,7 +139,7 @@ interface SpotifyApiClient {
         type: Set<SearchType>,
         limit: Int = 20,
         offset: Int = 0
-    ): Paging<SearchableResource>
+    ): SearchResults
 
     /**
      * Get Spotify catalog information for a single artist identified by its unique Spotify ID.
@@ -250,20 +253,54 @@ interface SpotifyApiClient {
         internal const val QUERY_TYPE = "type"
         internal const val QUERY_INCLUDE_GROUPS = "include_groups"
 
-        operator fun invoke(engine: HttpClientEngine): SpotifyApiClient = SpotifyApiClientImpl(engine)
+        /**
+         * Create an instance of the default Spotify API client.
+         *
+         * @param engine The [HttpClientEngine] used to send requests.
+         * @param userAgent The User-Agent string used to identify this client.
+         */
+        operator fun invoke(
+            engine: HttpClientEngine,
+            userAgent: String
+        ): SpotifyApiClient =
+            SpotifyApiClientImpl(engine, userAgent)
     }
 }
 
+/**
+ * Default implementation of the [SpotifyApiClient] protocol.
+ *
+ * @constructor Create an instance of the Spotify client.
+ * This constructor should only be used by testing code.
+ *
+ * @param engine The [HttpClientEngine] to use to send requests.
+ * The engine implementation depends on the target platform.
+ * @param userAgent The User-Agent string used to identify this client.
+ * @param authToken A pre-provided access token, for testing purposes.
+ */
 internal class SpotifyApiClientImpl
 @TestOnly constructor(
     engine: HttpClientEngine,
+    userAgent: String,
     private var authToken: OAuthToken?
 ) : SpotifyApiClient {
 
-    constructor(engine: HttpClientEngine) : this(engine, null)
+    /**
+     * Create an instance of the Spotify API client with a given [HttpClientEngine] and User-Agent.
+     *
+     * @param engine The engine used to send requests.
+     * The engine implementation depends on the target platform.
+     * @param userAgent The User-Agent string used to identify this client.
+     */
+    constructor(engine: HttpClientEngine, userAgent: String) : this(engine, userAgent, null)
 
     private val authService = HttpClient(engine) {
         expectSuccess = true
+
+        install(UserAgent) {
+            agent = userAgent
+        }
+
         Json {
             serializer = GsonSerializer {
                 disableHtmlEscaping()
@@ -291,6 +328,11 @@ internal class SpotifyApiClientImpl
     }
 
     private val spotifyService = HttpClient(engine) {
+
+        install(UserAgent) {
+            agent = userAgent
+        }
+
         Json {
             serializer = GsonSerializer {
                 disableHtmlEscaping()
@@ -302,6 +344,8 @@ internal class SpotifyApiClientImpl
                 registerTypeAdapter(Pitch::class.java, SpotifyPitchJsonAdapter())
             }
         }
+
+        install(RetryAfter)
 
         defaultRequest {
             accept(ContentType.Application.Json)
@@ -324,10 +368,6 @@ internal class SpotifyApiClientImpl
         when (val status = response.status) {
             HttpStatusCode.Unauthorized -> throw AuthenticationRequired()
             HttpStatusCode.NotFound -> throw ResourceNotFound()
-            HttpStatusCode.TooManyRequests -> {
-                val retryDelaySeconds = response.headers[HttpHeaders.RetryAfter]?.toIntOrNull()?.plus(1) ?: 0
-                throw ReachedRateLimit(retryDelaySeconds)
-            }
 
             else -> if (status.value > 400) {
                 val responseContent = response.content.readText()
@@ -349,7 +389,7 @@ internal class SpotifyApiClientImpl
         type: Set<SearchType>,
         limit: Int,
         offset: Int
-    ): Paging<SearchableResource> = spotifyService.get("/v1/search") {
+    ): SearchResults = spotifyService.get("/v1/search") {
         require(limit in 1..50)
         require(offset in 0..10000)
 
@@ -359,9 +399,10 @@ internal class SpotifyApiClientImpl
             parameter(SpotifyApiClient.QUERY_Q, query)
 
             if (type.isNotEmpty()) {
-                parameter(SpotifyApiClient.QUERY_TYPE, type.joinToString(",") { it.name.toLowerCase() })
+                parameters.appendAll(SpotifyApiClient.QUERY_TYPE, type.map { it.name.toLowerCase() })
             }
         }
+
     }
 
     override suspend fun getArtist(id: String): Artist = spotifyService.get("/v1/artists/$id")

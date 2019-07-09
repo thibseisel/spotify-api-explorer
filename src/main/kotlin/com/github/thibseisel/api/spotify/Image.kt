@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 /**
  * An image illustrating a media hosted on Spotify.
  */
-class Image(
+data class Image(
 
     /**
      * The source URL of the image.

@@ -1,6 +1,5 @@
-package com.github.thibseisel.sfyxplor
+package com.github.thibseisel.api.spotify
 
-import com.github.thibseisel.api.spotify.*
 import com.github.thibseisel.api.spotify.Pitch.*
 import com.google.gson.*
 import com.google.gson.internal.Streams
@@ -82,7 +81,11 @@ internal class SearchableAdapter(
             }
 
             @Suppress("unchecked_cast")
-            return SearchableAdapter(this, gson, type as TypeToken<SearchableResource>) as TypeAdapter<T>
+            return SearchableAdapter(
+                this,
+                gson,
+                type as TypeToken<SearchableResource>
+            ) as TypeAdapter<T>
         }
     }
 

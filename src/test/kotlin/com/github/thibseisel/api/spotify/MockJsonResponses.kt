@@ -1,4 +1,4 @@
-package com.github.thibseisel.sfyxplor
+package com.github.thibseisel.api.spotify
 
 import org.intellij.lang.annotations.Language
 
