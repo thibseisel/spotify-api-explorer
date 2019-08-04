@@ -7,6 +7,7 @@ import io.kotlintest.matchers.numerics.*
 import io.kotlintest.matchers.types.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
+import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.*
@@ -75,8 +76,7 @@ class SpotifyApiClientTest {
 
     @Test
     fun `Given an expired token, when calling any endpoint then fail by requiring authentication`() = runBlockingTest {
-        val expiredToken =
-            OAuthToken(TEST_TOKEN_STRING, 0)
+        val expiredToken = OAuthToken(TEST_TOKEN_STRING, 0)
 
         val expiredTokenClient = spotifyClient(expiredToken) { request ->
             val passedToken = request.headers[HttpHeaders.Authorization]
@@ -100,13 +100,27 @@ class SpotifyApiClientTest {
     }
 
     @Test
+    fun `When authenticating and authentication failed, then fail with AuthenticationException`() = runBlockingTest {
+        val authFailureClient = spotifyClient {
+            respondJsonError(HttpStatusCode.BadRequest)
+        }
+
+        shouldThrow<AuthenticationException> {
+            authFailureClient.authenticate(TEST_CLIENT_ID, TEST_CLIENT_SECRET)
+        }
+    }
+
+    @Test
     fun `Given valid credentials, when authenticating then send them to Spotify Accounts service as Base64`() = runBlockingTest {
         val unauthenticatedClient = spotifyClient { request ->
             request.method shouldBe HttpMethod.Post
             request.url.host shouldBe "accounts.spotify.com"
             request.url.encodedPath shouldBe "api/token"
-            request.url.parameters["grant_type"] shouldBe "client_credentials"
             request.headers[HttpHeaders.Authorization] shouldBe "Basic $CLIENT_BASE64_KEY"
+
+            request.body.shouldBeInstanceOf<FormDataContent> {
+                it.formData["grant_type"] shouldBe "client_credentials"
+            }
 
             respondJson(AUTH_TOKEN)
         }

@@ -23,8 +23,8 @@
             <td>${features.loudness}</td>
         </tr>
         <tr>
-            <th>Accoustiness</th>
-            <td>${features.accousticness}</td>
+            <th>Acoustiness</th>
+            <td>${features.acousticness}</td>
         </tr>
         <tr>
             <th>Danceability</th>

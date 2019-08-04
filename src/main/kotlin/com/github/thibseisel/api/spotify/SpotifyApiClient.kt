@@ -5,7 +5,9 @@ import io.ktor.client.*
 import io.ktor.client.engine.*
 import io.ktor.client.features.*
 import io.ktor.client.features.json.*
+import io.ktor.client.features.logging.*
 import io.ktor.client.request.*
+import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import kotlinx.coroutines.io.*
 import org.jetbrains.annotations.*
@@ -74,7 +76,7 @@ data class OAuthToken(
  * Thrown when authentication via the Spotify Authorization server failed
  * because the provided credentials were invalid.
  */
-class AuthenticationException : Exception()
+class AuthenticationException(statusCode: HttpStatusCode, message: String) : Exception("Error ${statusCode.value}: $message")
 
 /**
  * Base class for errors that could occur when accessing resources from the Spotify Web API.
@@ -262,8 +264,7 @@ interface SpotifyApiClient {
         operator fun invoke(
             engine: HttpClientEngine,
             userAgent: String
-        ): SpotifyApiClient =
-            SpotifyApiClientImpl(engine, userAgent)
+        ): SpotifyApiClient = SpotifyApiClientImpl(engine, userAgent)
     }
 }
 
@@ -295,7 +296,6 @@ internal class SpotifyApiClientImpl
     constructor(engine: HttpClientEngine, userAgent: String) : this(engine, userAgent, null)
 
     private val authService = HttpClient(engine) {
-        expectSuccess = true
 
         install(UserAgent) {
             agent = userAgent
@@ -309,19 +309,17 @@ internal class SpotifyApiClientImpl
         }
 
         defaultRequest {
-            accept(ContentType.Application.Json)
             url {
                 protocol = URLProtocol.HTTPS
                 host = "accounts.spotify.com"
                 encodedPath = "api/token"
-                parameter("grant_type", "client_credentials")
             }
         }
 
         HttpResponseValidator {
             validateResponse {
-                if (it.status == HttpStatusCode.Unauthorized) {
-                    throw AuthenticationException()
+                if (it.status != HttpStatusCode.OK) {
+                    throw AuthenticationException(it.status, it.content.readText())
                 }
             }
         }
@@ -381,6 +379,9 @@ internal class SpotifyApiClientImpl
 
         return authService.post<OAuthToken> {
             header(HttpHeaders.Authorization, "Basic $base64Key")
+            body = FormDataContent(Parameters.build {
+                append("grant_type", "client_credentials")
+            })
         }.also { authToken = it }
     }
 
