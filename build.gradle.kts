@@ -54,6 +54,7 @@ dependencies {
     implementation("io.ktor:ktor-client-okhttp:$ktor_version")
     implementation("io.ktor:ktor-client-json:$ktor_version")
     implementation("io.ktor:ktor-client-gson:$ktor_version")
+    runtimeOnly("io.ktor:ktor-client-auth:$ktor_version")
     implementation("io.ktor:ktor-client-logging-jvm:$ktor_version")
 
     implementation("org.koin:koin-ktor:$koin_version")

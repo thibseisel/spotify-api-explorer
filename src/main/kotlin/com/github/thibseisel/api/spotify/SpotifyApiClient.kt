@@ -5,7 +5,6 @@ import io.ktor.client.*
 import io.ktor.client.engine.*
 import io.ktor.client.features.*
 import io.ktor.client.features.json.*
-import io.ktor.client.features.logging.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.http.*
@@ -64,6 +63,11 @@ data class OAuthToken(
     @SerializedName("access_token")
     val token: String,
 
+    /**
+     * The type of token this is, typically just the string `bearer`.
+     */
+    @SerializedName("token_type")
+    val tokenType: String,
     /**
      * The number of seconds the access token is granted for.
      * An expired token cannot be used and should be renewed.
@@ -352,7 +356,7 @@ internal class SpotifyApiClientImpl
                 host = "api.spotify.com"
             }
 
-            authToken?.let { (token, _) ->
+            authToken?.let { (token, tokenType, _) ->
                 header(HttpHeaders.Authorization, "Bearer $token")
             }
         }

@@ -15,9 +15,9 @@ import org.intellij.lang.annotations.*
 import java.util.*
 import kotlin.test.*
 
-private const val TEST_CLIENT_ID = "client_id"
-private const val TEST_CLIENT_SECRET = "client_secret"
-private const val CLIENT_BASE64_KEY = "Y2xpZW50X2lkOmNsaWVudF9zZWNyZXQ="
+internal const val TEST_CLIENT_ID = "client_id"
+internal const val TEST_CLIENT_SECRET = "client_secret"
+internal const val CLIENT_BASE64_KEY = "Y2xpZW50X2lkOmNsaWVudF9zZWNyZXQ="
 private const val TEST_USER_AGENT = "SpotifyApiClient/1.0.0 KtorHttpClient/1.2.2"
 
 /**
@@ -76,7 +76,7 @@ class SpotifyApiClientTest {
 
     @Test
     fun `Given an expired token, when calling any endpoint then fail by requiring authentication`() = runBlockingTest {
-        val expiredToken = OAuthToken(TEST_TOKEN_STRING, 0)
+        val expiredToken = OAuthToken(TEST_TOKEN_STRING, "bearer", 0)
 
         val expiredTokenClient = spotifyClient(expiredToken) { request ->
             val passedToken = request.headers[HttpHeaders.Authorization]
@@ -664,16 +664,6 @@ private infix fun HttpRequestData.shouldGetOnSpotifyEndpoint(spotifyApiEndpoint:
     url.host shouldBe "api.spotify.com"
     url.encodedPath shouldBe spotifyApiEndpoint
 }
-
-/**
- * Create an HTTP response with the provided [json] as the content body.
- *
- * @param json The content of the response, formatted as a valid JSON string.
- * @param status The status code of the HTTP response. Defaults to 200 (OK).
- */
-private fun respondJson(@Language("JSON") json: String, status: HttpStatusCode = HttpStatusCode.OK) = respond(
-    json, status, headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-)
 
 /**
  * Produces the JSON response body returned by the Spotify Web API when it returns a 400+ status code.
